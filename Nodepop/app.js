@@ -6,16 +6,20 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 
+const app = express();
+
+
 /* jshint ignore:start */
 const db = require('./models/connectMongoose');
 const loginController = require('./controllers/loginController');
+
+
 /* jshint ignore:end */
 
 // Cargamos las definiciones de todos nuestros modelos
 require('./models/Anuncio');
 require('./models/Usuario');
 
-const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -30,9 +34,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Global Template variables
 app.locals.title = 'NodePop';
 
+// Setup i18n
+const i18n = require('./lib/i18nConfigure');
+app.use(i18n.init);
+
 // Web
-app.use('/', require('./routes/index'));
-app.use('/anuncios', require('./routes/anuncios'));
+app.use('/',                    require('./routes/index'));
+app.use('/anuncios',            require('./routes/anuncios'));
+app.use('/change-locale',       require('./routes/change-locale'));
 
 // API v1
 app.post('/apiv1/Authenticate', loginController.postAuthenticate);
