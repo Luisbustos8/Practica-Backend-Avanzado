@@ -5,13 +5,16 @@ const path = require('path');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcrypt');
+
 
 const app = express();
 
+const loginController = require('./controllers/loginController');
 
 /* jshint ignore:start */
 const db = require('./models/connectMongoose');
-const loginController = require('./controllers/loginController');
+
 
 
 /* jshint ignore:end */
@@ -31,21 +34,26 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
 // Global Template variables
 app.locals.title = 'NodePop';
+
+
 
 // Setup i18n
 const i18n = require('./lib/i18nConfigure');
 app.use(i18n.init);
 
 // Web
-app.use('/',                    require('./routes/index'));
-app.use('/anuncios',            require('./routes/anuncios'));
-app.use('/change-locale',       require('./routes/change-locale'));
+app.use('/',                          require('./routes/index'));
+app.use('/anuncios',                  require('./routes/anuncios'));
+app.use('/change-locale',             require('./routes/change-locale'));
 
 // API v1
-app.post('/apiv1/Authenticate', loginController.postAuthenticate);
-app.use('/apiv1/anuncios', require('./routes/apiv1/anuncios'));
+app.post('/apiv1/Authenticate',       loginController.postAuthenticate);
+app.use('/apiv1/anuncios',            require('./routes/apiv1/anuncios'));
+app.post('apiv1/anuncios',            require('./routes/apiv1/anuncios'));
+app.post('/apiv1/upload',             require('./routes/apiv1/anuncios'));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

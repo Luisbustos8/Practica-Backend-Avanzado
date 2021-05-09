@@ -4,7 +4,25 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Anuncio = mongoose.model('Anuncio');
+const path = require('path');
 const jwtAuth = require('../../lib/jwtAuth');
+const cote = require('cote');
+const multer = require('multer');
+const Requester = new cote.Requester({ name: 'Redimensionado de imagen'});
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, '..', 'public', 'images', 'anuncios'));
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.filename + '-' + Date.now() + file.originalname);
+    }
+});
+
+var upload = multer({ storage: storage })
+
+
+
 
 router.get('/', (req, res, next) => {
 
@@ -51,5 +69,40 @@ router.get('/', (req, res, next) => {
 router.get('/tags', function (req, res) {
   res.json({ ok: true, allowedTags: Anuncio.allowedTags() });
 });
+
+//Crear anuncio
+
+router.post('/', upload.single('photo'), async(req, res, next) => {
+    try {
+        const anuncioData = req.body;
+
+        const anuncio = new Anuncio(anuncioData)
+
+        const nuevoAnuncio = await anuncio.save();
+
+        if(req.file) {
+          anuncioData.foto = req.file.filename;
+
+          Requester.send({
+            type: 'resize',
+            filename: req.file.filename,
+            destination:req.file.destination
+          }, resized => {
+            anuncio.data.thumbnail = resized;
+            Anuncio.findByIdAndUpdate(nuevoAnuncio._id, anuncioData, {new: true}, (err, nuevoAnuncio) => {
+              if (error) {
+                next(error)
+              }
+            })
+          })
+        }
+
+        res.status(201).json({result: nuevoAnuncio});
+    } catch(err) {
+        next(err);
+    }
+})
+
+
 
 module.exports = router;

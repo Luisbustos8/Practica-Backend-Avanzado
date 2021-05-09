@@ -14,6 +14,11 @@ db.once('open', function () {
   console.info('Connected to mongodb.');
 });
 
-mongoose.connect('mongodb://localhost/nodepop');
+mongoose.connect('mongodb://localhost/nodepop', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useCreateIndex: true
+
+});
 
 module.exports = db;

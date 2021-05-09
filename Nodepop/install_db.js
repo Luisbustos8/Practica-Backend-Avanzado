@@ -13,6 +13,7 @@ const Anuncio = require('./models/Anuncio');
 const Usuario = require('./models/Usuario');
 
 
+
 db.once('open', async function () {
   try {
     const answer = await askUser('Are you sure you want to empty DB? (no) ');
@@ -69,9 +70,10 @@ async function initUsuario() {
   const result = await Usuario.insertMany(
     {
       email: 'admin@example.com',
-      password: '1234'
+      password: await Usuario.hashPassword('1234')
     }
   )
+    console.log('Creados', result, 'usuarios');
 };
 
 

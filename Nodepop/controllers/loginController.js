@@ -1,19 +1,21 @@
 'use strict';
 
 const jwt = require('jsonwebtoken');
-const Usuario = require('../models/Usuario');
+const { Usuario } = require('../models');
+
 
 
 class LoginController {
 
   /**
-   * POST /loginJWT
+   * POST /V1/AUTHENTICATE
    */
    async postAuthenticate(req, res, next) {
     try {
       const { email, password } = req.body;
   
       const user = await Usuario.findOne({ email })
+      
       
       if (!user || !(await Usuario.comparePassword(password)) ) {
 
@@ -27,27 +29,13 @@ class LoginController {
           next(err);
           return;
         }
-        res.json({ token: jwtToken});
+        res.json({ token: jwtToken });
       });
     
     } catch(err) {
       next(err);
     }
   }
-
-  /**
-   * GET /logout
-   */
-  logout(req, res, next) {
-    req.session.regenerate(err => {
-      if (err) {
-        next(err);
-        return;
-      }
-      res.redirect('/');
-    })
-  }
-
 }
 module.exports = new LoginController();
 
